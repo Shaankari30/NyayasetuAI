@@ -13,25 +13,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
-    // Extract text from file
     let contractText = ''
 
     if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-      // For PDF: read as buffer and parse
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
-
       try {
-        // Dynamic import to avoid SSR issues
         const pdfParse = (await import('pdf-parse')).default
         const data = await pdfParse(buffer)
         contractText = data.text
       } catch {
-        // Fallback: try reading as text
         contractText = buffer.toString('utf-8').replace(/[^\x20-\x7E\n]/g, ' ')
       }
     } else {
-      // Plain text file
       contractText = await file.text()
     }
 
@@ -39,7 +33,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not extract text from the document. Please try a text file.' }, { status: 400 })
     }
 
-    // Truncate to avoid token limits
     const truncated = contractText.slice(0, 6000)
 
     const prompt = `You are NyayaSetu AI, an expert Indian legal assistant. Analyze the following contract/document under Indian law.
@@ -81,12 +74,8 @@ Rules:
     })
 
     const raw = completion.choices[0]?.message?.content || ''
-
-    // Extract JSON from response
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error('Could not parse analysis response')
-    }
+    if (!jsonMatch) throw new Error('Could not parse analysis response')
 
     const result = JSON.parse(jsonMatch[0])
     return NextResponse.json(result)
@@ -98,10 +87,4 @@ Rules:
       { status: 500 }
     )
   }
-}
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
 }

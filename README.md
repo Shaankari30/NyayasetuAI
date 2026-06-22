@@ -110,14 +110,19 @@ Or deploy with one click:
 
 ## 🌍 Supported Languages
 
+Multilingual responses are powered by **Llama 3.3 70B's native multilingual capability** — the model generates responses directly in the user's selected language without a separate translation layer.
+
 | Language | Code | Status |
 |----------|------|--------|
 | English | en | ✅ Full support |
-| Hindi (हिंदी) | hi | ✅ Full support |
-| Telugu (తెలుగు) | te | ✅ Full support |
-| Tamil (தமிழ்) | ta | ✅ Full support |
-| Bengali (বাংলা) | bn | ✅ Full support |
-| Marathi (मराठी) | mr | ✅ Full support |
+| Hindi (हिंदी) | hi | ✅ Good support |
+| Telugu (తెలుగు) | te | ✅ Good support |
+| Tamil (தமிழ்) | ta | ⚠️ Partial support |
+| Bengali (বাংলা) | bn | ⚠️ Partial support |
+| Marathi (मराठी) | mr | ⚠️ Partial support |
+
+> **Note:** BHASHINI API integration is planned for a future release to provide robust, accent-aware multilingual support across all 22 scheduled Indian languages.
+
 
 ---
 
