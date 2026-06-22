@@ -3,6 +3,34 @@ import Groq from 'groq-sdk'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
+async function extractTextFromPDF(buffer: Buffer): Promise<string> {
+  // Extract readable text directly from PDF buffer
+  const raw = buffer.toString('latin1')
+  
+  // Pull text between BT (begin text) and ET (end text) PDF markers
+  const textChunks: string[] = []
+  const btEtRegex = /BT([\s\S]*?)ET/g
+  let match
+  while ((match = btEtRegex.exec(raw)) !== null) {
+    const block = match[1]
+    // Extract strings inside parentheses
+    const strRegex = /\(([^)]+)\)/g
+    let strMatch
+    while ((strMatch = strRegex.exec(block)) !== null) {
+      const text = strMatch[1]
+        .replace(/\\n/g, ' ')
+        .replace(/\\r/g, ' ')
+        .replace(/\\\(/g, '(')
+        .replace(/\\\)/g, ')')
+        .replace(/\\\\/g, '\\')
+        .trim()
+      if (text.length > 1) textChunks.push(text)
+    }
+  }
+
+  return textChunks.join(' ').replace(/\s+/g, ' ').trim()
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
@@ -18,19 +46,16 @@ export async function POST(req: NextRequest) {
     if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
-      try {
-        const pdfParse = (await import('pdf-parse')).default
-        const data = await pdfParse(buffer)
-        contractText = data.text
-      } catch {
-        contractText = buffer.toString('utf-8').replace(/[^\x20-\x7E\n]/g, ' ')
-      }
+      contractText = await extractTextFromPDF(buffer)
     } else {
       contractText = await file.text()
     }
 
     if (!contractText || contractText.trim().length < 50) {
-      return NextResponse.json({ error: 'Could not extract text from the document. Please try a text file.' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Could not extract text from the document. Please try uploading a .txt file instead.' },
+        { status: 400 }
+      )
     }
 
     const truncated = contractText.slice(0, 6000)
