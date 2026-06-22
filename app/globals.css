@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --saffron: #FF9933;
+  --india-green: #138808;
+  --navy: #1a2e5a;
+  --dark: #0f1d3a;
+}
+
+body {
+  background-color: #0f1d3a;
+  color: #ffffff;
+}
+
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: #1a2e5a; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #FF9933; border-radius: 2px; }
